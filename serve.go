@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/jamesadney/serve/fileserver"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -13,18 +12,19 @@ var (
 	host  string
 	port  int
 	cache bool
+	dir   string
 )
 
 func init() {
 	const (
-		DEFAULT_HOST = "127.0.0.1"
+		DEFAULT_HOST = "0.0.0.0"
 		HOST_USAGE   = "host to run server on"
 	)
 	flag.StringVar(&host, "host", DEFAULT_HOST, HOST_USAGE)
 	flag.StringVar(&host, "h", DEFAULT_HOST, HOST_USAGE)
 
 	const (
-		DEFAULT_PORT = 8000
+		DEFAULT_PORT = 80
 		PORT_USAGE   = "port to run server on"
 	)
 	flag.IntVar(&port, "port", DEFAULT_PORT, PORT_USAGE)
@@ -34,6 +34,13 @@ func init() {
 		DEFAULT_CACHE = false
 		CACHE_USAGE   = "enable caching"
 	)
+	const (
+		DEFAULT_DIR = "."
+		DIR_USAGE   = "dir to run server on"
+	)
+	flag.StringVar(&dir, "dir", DEFAULT_DIR, DIR_USAGE)
+	flag.StringVar(&dir, "d", DEFAULT_DIR, DIR_USAGE)
+
 	flag.BoolVar(&cache, "enable-caching", DEFAULT_CACHE, CACHE_USAGE)
 	flag.BoolVar(&cache, "c", DEFAULT_CACHE, CACHE_USAGE)
 }
@@ -41,14 +48,12 @@ func init() {
 func main() {
 	flag.Parse()
 
-	directory := flag.Arg(0)
-	dirPath, err := filepath.Abs(directory)
+	address := host + ":" + strconv.Itoa(port)
+	dirPath, err := filepath.Abs(dir)
 	if err != nil {
 		panic(err)
 	}
 
-	address := host + ":" + strconv.Itoa(port)
-
-	fmt.Printf("Serving '%s/' on 'http://%s'\n", dirPath, address)
-	log.Fatal(fileserver.ServeDir(dirPath, address, cache))
+	fmt.Printf("Serving '%s/' on 'http://%s'\n", dir, address)
+	log.Fatal(ServeDir(dirPath, address, cache))
 }
